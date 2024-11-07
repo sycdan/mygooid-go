@@ -21,6 +21,13 @@ type Args struct {
 
 var reader *bufio.Reader
 
+var ANCHORS = []string{"aqw", "btx", "cry", "djs", "ez", "fmn", "gop", "hkl", "iuv"}
+
+const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
+const NUMBERS = "0123456789"
+const SYMBOLS = "!@#%:-_+=?"
+
 func MakeGooid(args Args) string {
 	prefixedHashes := slugifyAndHashObject(args)
 	sort.Strings(prefixedHashes)
@@ -45,8 +52,8 @@ func main() {
 	}
 
 	gooid := MakeGooid(args)
-	rng := renji.New(gooid)
-	rng.Next()
+	rng := renji.NewRenji(gooid)
+	rng.Float64()
 	fmt.Println(gooid, rng)
 }
 

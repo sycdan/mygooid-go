@@ -13,7 +13,7 @@ type Renji struct {
 }
 
 // Create a new instance with the given seed hash.
-func New(seedHash string) *Renji {
+func NewRenji(seedHash string) *Renji {
 	return (&Renji{seedHash: seedHash}).Reset()
 }
 
@@ -30,8 +30,8 @@ func (r *Renji) nextHash() string {
 	return newHash
 }
 
-// Convert the next hash to a number between 0 and 1.
-func (r *Renji) Next() float64 {
+// Generates a number between 0 and 1 (inclusive).
+func (r *Renji) Float64() float64 {
 	hash := r.nextHash()
 
 	bytes, err := hex.DecodeString(hash[:64])
@@ -39,10 +39,20 @@ func (r *Renji) Next() float64 {
 		utils.Die(err.Error())
 	}
 
-	var bigEight uint64
+	var bigEight uint64 // Positive values only
 	for i := 0; i < 8; i++ {
 		bigEight |= uint64(bytes[i]) << (56 - 8*i)
 	}
 
 	return float64(bigEight) / float64(math.MaxUint64)
+}
+
+// Generates a random integer between 0 (inclusive) and `lessThan` (exclusive).
+func (r *Renji) Intn(lessThan int) int {
+	return int(math.Floor(r.Float64() * float64(lessThan)))
+}
+
+// Return a random integer between `min` and `max` (inclusive).
+func (r *Renji) NextBetween(min int, max int) int {
+	return min + r.Intn(max-min+1)
 }
