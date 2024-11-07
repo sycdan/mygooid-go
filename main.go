@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"fmt"
 	"os"
 	"reflect"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/alexflint/go-arg"
 	Slug "github.com/gosimple/slug"
+	"github.com/sycdan/mygooid-go/internal/renji"
+	"github.com/sycdan/mygooid-go/internal/utils"
 )
 
 type Args struct {
@@ -23,7 +24,7 @@ var reader *bufio.Reader
 func MakeGooid(args Args) string {
 	prefixedHashes := slugifyAndHashObject(args)
 	sort.Strings(prefixedHashes)
-	return hashText(strings.Join(prefixedHashes, ""))
+	return utils.HashText(strings.Join(prefixedHashes, ""))
 }
 
 func init() {
@@ -44,11 +45,9 @@ func main() {
 	}
 
 	gooid := MakeGooid(args)
-	fmt.Println(gooid)
-}
-
-func toString[T any](value T) string {
-	return fmt.Sprintf("%v", value)
+	rng := renji.New(gooid)
+	rng.Next()
+	fmt.Println(gooid, rng)
 }
 
 // Hash every value in the passed object then hash the hashes (prefixed with their property names).
@@ -59,8 +58,8 @@ func slugifyAndHashObject(obj interface{}) []string {
 		for i := 0; i < value.NumField(); i++ {
 			field := value.Type().Field(i)
 			value := value.Field(i)
-			slug := slugify(toString(value.Interface()))
-			hash := hashText(slug)
+			slug := slugify(utils.ToString(value.Interface()))
+			hash := utils.HashText(slug)
 			prefixedHashes = append(prefixedHashes, slugify(field.Name+"-"+hash))
 		}
 	}
@@ -77,18 +76,7 @@ func readInput(prompt string) string {
 	fmt.Println(prompt + ": ")
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		die("Error reading input:" + err.Error())
+		utils.Die("Error reading input:" + err.Error())
 	}
 	return strings.TrimSpace(text)
-}
-
-// Compute the SHA256 hash of a string and return it in hex.
-func hashText(text string) string {
-	sum := sha256.Sum256([]byte(text))
-	return fmt.Sprintf("%x", sum)
-}
-
-func die(reason string) {
-	fmt.Println(reason)
-	os.Exit(1)
 }

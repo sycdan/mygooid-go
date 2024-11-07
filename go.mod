@@ -1,4 +1,4 @@
-module github.com/sycdan/gooid
+module github.com/sycdan/mygooid-go
 
 go 1.23.2
 
