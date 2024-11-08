@@ -31,7 +31,7 @@ const NUMBERS = "0123456789"
 const SYMBOLS = "!@#%:-_+=?"
 
 func MakeGooid(args Args) string {
-	prefixedHashes := slugifyAndHashObject(args)
+	prefixedHashes := slugifyAndHashFields(args, []string{"Name", "Secret", "Purpose"})
 	return utils.HashText(strings.Join(prefixedHashes, ""))
 }
 
@@ -62,22 +62,16 @@ func main() {
 	fmt.Println(gooid, rng)
 }
 
-// Hash every value in the passed object then hash the hashes.
-func slugifyAndHashObject(obj interface{}) []string {
+// Slugify and then hash the requested fields from the passed object, then return the hashes in the same order.
+func slugifyAndHashFields(object interface{}, fields []string) []string {
 	var hashes []string
-	value := reflect.ValueOf(obj)
-	if value.Kind() == reflect.Struct {
-		for i := 0; i < value.NumField(); i++ {
-			field := value.Type().Field(i).Name
-			value := utils.ToString(value.Field(i).Interface())
-			if value == "" {
-				continue
-			}
-			// We don't want to slugify the characters field because casing matters there.
-			if field != "Characters" {
-				value = slugify(value)
-			}
-			hash := utils.HashText(value)
+	value := reflect.ValueOf(object)
+	for _, fieldName := range fields {
+		field := value.FieldByName(fieldName)
+		if field.IsValid() {
+			value := utils.ToString(field.Interface())
+			slug := slugify(value)
+			hash := utils.HashText(slug)
 			hashes = append(hashes, hash)
 		}
 	}

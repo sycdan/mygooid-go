@@ -22,3 +22,13 @@ func HashText(text string) string {
 func ToString[T any](value T) string {
 	return fmt.Sprintf("%v", value)
 }
+
+// Check if a specific string is in a slice.
+func Contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
