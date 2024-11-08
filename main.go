@@ -57,20 +57,19 @@ func main() {
 	fmt.Println(gooid, rng)
 }
 
-// Hash every value in the passed object then hash the hashes (prefixed with their property names).
+// Hash every value in the passed object then hash the hashes.
 func slugifyAndHashObject(obj interface{}) []string {
-	var prefixedHashes []string
+	var hashes []string
 	value := reflect.ValueOf(obj)
 	if value.Kind() == reflect.Struct {
 		for i := 0; i < value.NumField(); i++ {
-			field := value.Type().Field(i)
 			value := value.Field(i)
 			slug := slugify(utils.ToString(value.Interface()))
 			hash := utils.HashText(slug)
-			prefixedHashes = append(prefixedHashes, slugify(field.Name+"-"+hash))
+			hashes = append(hashes, hash)
 		}
 	}
-	return prefixedHashes
+	return hashes
 }
 
 // Convert "Some Text" to "some-text".
