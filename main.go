@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/alexflint/go-arg"
@@ -71,6 +70,9 @@ func slugifyAndHashObject(obj interface{}) []string {
 		for i := 0; i < value.NumField(); i++ {
 			field := value.Type().Field(i).Name
 			value := utils.ToString(value.Field(i).Interface())
+			if value == "" {
+				continue
+			}
 			// We don't want to slugify the characters field because casing matters there.
 			if field != "Characters" {
 				value = slugify(value)
