@@ -15,14 +15,17 @@ import (
 )
 
 type Args struct {
-	Name   string `arg:"positional" help:"Full legal name"`
-	Secret string `arg:"positional" help:"Memorable secret"`
+	Name       string `arg:"positional" help:"Full legal name"`
+	Secret     string `arg:"positional" help:"Memorable secret"`
+	Purpose    string `arg:"positional" help:"What is the password for (default: General)"`
+	Characters string `arg:"--characters, -c" help:"All characters allowed in the password (default: A-Z, a-z, 0-9, !@#%:-_+=?)"`
 }
 
 var reader *bufio.Reader
 
-var ANCHORS = []string{"aqw", "btx", "cry", "djs", "ez", "fmn", "gop", "hkl", "iuv"}
+var ANCHORS = []string{"aqw1", "btx2", "cry3", "djs4", "ez5*", "fmn6", "gop7", "hkl8", "iuv9"}
 
+const PURPOSE = "General"
 const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const LOWERCASE = "abcdefghijklmnopqrstuvwxyz"
 const NUMBERS = "0123456789"
@@ -30,7 +33,6 @@ const SYMBOLS = "!@#%:-_+=?"
 
 func MakeGooid(args Args) string {
 	prefixedHashes := slugifyAndHashObject(args)
-	sort.Strings(prefixedHashes)
 	return utils.HashText(strings.Join(prefixedHashes, ""))
 }
 
@@ -40,7 +42,11 @@ func init() {
 }
 
 func main() {
-	var args Args
+	args := Args{
+		Characters: UPPERCASE + LOWERCASE + NUMBERS + SYMBOLS,
+		Purpose:    PURPOSE,
+	}
+
 	arg.MustParse(&args)
 
 	if args.Name == "" {
@@ -63,9 +69,13 @@ func slugifyAndHashObject(obj interface{}) []string {
 	value := reflect.ValueOf(obj)
 	if value.Kind() == reflect.Struct {
 		for i := 0; i < value.NumField(); i++ {
-			value := value.Field(i)
-			slug := slugify(utils.ToString(value.Interface()))
-			hash := utils.HashText(slug)
+			field := value.Type().Field(i).Name
+			value := utils.ToString(value.Field(i).Interface())
+			// We don't want to slugify the characters field because casing matters there.
+			if field != "Characters" {
+				value = slugify(value)
+			}
+			hash := utils.HashText(value)
 			hashes = append(hashes, hash)
 		}
 	}
