@@ -16,12 +16,12 @@ func TestMakeGooid(t *testing.T) {
 		// dan-stace = de51bf63887101b2eb189cfdd447b60cdec1808e10cf3a337070b981b4b58525
 		// deranged-hermit = 31def1744b284c8422594ab655121c8ef1c213254ab14c69661feea3cbaf962d
 		// general = 0feae16d55365acf07fe9f909834361ba6ee606854746539230bdc84a6a24cee
-		{Args{Name: "Dan Stace", Secret: "Deranged Hermit", Purpose: "General", Characters: "ignored"}, "77281e96895dc2364b22e7192aec81e3bb8d5c265ec4aedc36cfebfc7e598f48"},
+		{Args{Name: "Dan Stace", Secret: "Deranged Hermit", Purpose: "General"}, "77281e96895dc2364b22e7192aec81e3bb8d5c265ec4aedc36cfebfc7e598f48"},
 	}
 	for _, test := range tests {
 		got := MakeGooid(test.input)
 		if got != test.want {
-			t.Errorf("MakeGooid(%s) = %s; want %s", test.input, got, test.want)
+			t.Errorf("MakeGooid(%s) = %s; want %s", test.input.Name+","+test.input.Secret, got, test.want)
 		}
 	}
 }
