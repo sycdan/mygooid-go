@@ -25,6 +25,18 @@ type Args struct {
 	Special   string `arg:"--special, -s" help:"All special characters allowed in the password (default: !@#%:-_+=?)"`
 }
 
+func NewArgs() *Args {
+	return &Args{
+		// name and secret wil be set later
+		Purpose:   DEFAULT_PURPOSE,
+		Length:    DEFAULT_LENGTH,
+		Uppercase: DEFAULT_UPPERCASES,
+		Lowercase: DEFAULT_LOWERCASES,
+		Number:    DEFAULT_NUMBERS,
+		Special:   DEFAULT_SYMBOLS,
+	}
+}
+
 var reader *bufio.Reader
 
 var ANCHORS = []string{"aqw1", "btx2", "cry3", "djs4", "ez5*", "fmn6", "gop7", "hkl8", "iuv9"}
@@ -36,13 +48,16 @@ const DEFAULT_NUMBERS = "0123456789"
 const DEFAULT_SYMBOLS = "!@#%:-_+=?"
 const DEFAULT_LENGTH = 8
 
-func MakeGooid(args Args) string {
+func MakeGooid(args *Args) string {
 	prefixedHashes := slugifyAndHashFields(args, []string{"Name", "Secret", "Purpose"})
 	return utils.HashText(strings.Join(prefixedHashes, ""))
 }
 
-func GeneratePassword(args Args, rng *renji.Renji) string {
+func GeneratePassword(args *Args) string {
 	var password string
+
+	gooid := MakeGooid(args)
+	rng := renji.NewRenji(gooid)
 
 	// Add one of each required (nonblank) character group to the password.
 
@@ -61,17 +76,14 @@ func init() {
 	reader = bufio.NewReader(os.Stdin)
 }
 
-func main() {
-	args := Args{
-		Purpose:   DEFAULT_PURPOSE,
-		Length:    DEFAULT_LENGTH,
-		Uppercase: DEFAULT_UPPERCASES,
-		Lowercase: DEFAULT_LOWERCASES,
-		Number:    DEFAULT_NUMBERS,
-		Special:   DEFAULT_SYMBOLS,
-	}
+func parseArgs() *Args {
+	args := NewArgs()
+	arg.MustParse(args)
+	return args
+}
 
-	arg.MustParse(&args)
+func main() {
+	args := parseArgs()
 
 	if args.Name == "" {
 		args.Name = readInput("Enter your full legal name")
@@ -81,17 +93,20 @@ func main() {
 		args.Secret = readInput("Enter a memorable secret")
 	}
 
-	gooid := MakeGooid(args)
-	rng := renji.NewRenji(gooid)
-	password := GeneratePassword(args, rng)
-	rng.Float64()
-	fmt.Println(gooid, rng, password)
+	password := GeneratePassword(args)
+	fmt.Println(password)
 }
 
 // Slugify and then hash the requested fields from the passed object, then return the hashes in the same order.
 func slugifyAndHashFields(object interface{}, fields []string) []string {
 	var hashes []string
 	value := reflect.ValueOf(object)
+
+	// If the value is a pointer, dereference it to get the actual struct.
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
 	for _, fieldName := range fields {
 		field := value.FieldByName(fieldName)
 		if field.IsValid() {
