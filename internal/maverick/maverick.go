@@ -6,13 +6,13 @@ import (
 
 // A generic shuffler.
 type Maverick struct {
-	pool []string
-	deck []string
+	pool []interface{}
+	deck []interface{}
 	rng  *renji.Renji
 }
 
 // Creates a new Maverick with a pool of options.
-func NewMaverick(pool []string, rng *renji.Renji) *Maverick {
+func NewMaverick(pool []interface{}, rng *renji.Renji) *Maverick {
 	return (&Maverick{
 		pool: pool,
 		rng:  rng,
@@ -21,7 +21,7 @@ func NewMaverick(pool []string, rng *renji.Renji) *Maverick {
 
 // Resets the deck to its initial content.
 func (m *Maverick) Reset() *Maverick {
-	m.deck = append([]string{}, m.pool...)
+	m.deck = append([]interface{}{}, m.pool...)
 	return m
 }
 
@@ -36,7 +36,7 @@ func (m *Maverick) Shuffle() *Maverick {
 }
 
 // Next returns the next random element from the pool. When all elements are exhausted, it reshuffles.
-func (m *Maverick) Next() string {
+func (m *Maverick) Next() interface{} {
 	return m.deck[0]
 	// If no elements are available, reshuffle the pool.
 	// if len(s.deck) == 0 {

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/alexflint/go-arg"
-	"github.com/sycdan/mygooid-go/internal/maverick"
+	// "github.com/sycdan/mygooid-go/internal/maverick"
 	"github.com/sycdan/mygooid-go/internal/renji"
 	"github.com/sycdan/mygooid-go/internal/utils"
 )
@@ -73,8 +73,8 @@ func GeneratePassword(args *Args) string {
 		password += string(args.Special[rng.Intn(len(args.Special))])
 	}
 
-	shuffler := maverick.NewMaverick([]string{}, rng)
-	shuffler.Shuffle()
+	// shuffler := maverick.NewMaverick([]string{}, rng)
+	// shuffler.Shuffle()
 
 	return password
 }

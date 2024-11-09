@@ -7,18 +7,17 @@ import (
 	"github.com/sycdan/mygooid-go/internal/utils"
 )
 
-const SEED_HASH = "ce568acbe94abae40f3c9d814fd82dbdb6eac76157f2dec42837a471a73e74f3"
-
-var rng = renji.NewRenji(SEED_HASH)
-
 func TestNext(t *testing.T) {
+	const SEED_HASH = "ce568acbe94abae40f3c9d814fd82dbdb6eac76157f2dec42837a471a73e74f3"
 	tests := []struct {
-		input []string
-		want  string
+		input []interface{}
+		want  interface{}
 	}{
-		{[]string{"a", "b", "c"}, "c"},
+		{[]interface{}{"a", "b", "c"}, "c"},
+		{[]interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9}, 2},
 	}
 	for _, test := range tests {
+		var rng = renji.NewRenji(SEED_HASH)
 		shuffler := NewMaverick(test.input, rng)
 		got := shuffler.Next()
 		if got != test.want {
