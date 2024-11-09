@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/alexflint/go-arg"
-	Slug "github.com/gosimple/slug"
 	"github.com/sycdan/mygooid-go/internal/maverick"
 	"github.com/sycdan/mygooid-go/internal/renji"
 	"github.com/sycdan/mygooid-go/internal/utils"
@@ -111,17 +110,12 @@ func slugifyAndHashFields(object interface{}, fields []string) []string {
 		field := value.FieldByName(fieldName)
 		if field.IsValid() {
 			value := utils.ToString(field.Interface())
-			slug := slugify(value)
+			slug := utils.Slugify(value)
 			hash := utils.HashText(slug)
 			hashes = append(hashes, hash)
 		}
 	}
 	return hashes
-}
-
-// Convert "Some Text" to "some-text".
-func slugify(text string) string {
-	return Slug.Make(text)
 }
 
 // Read all user input up until they press enter.

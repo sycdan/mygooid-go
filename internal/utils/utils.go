@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+
+	"github.com/gosimple/slug"
 )
 
 // Exit the program with a message.
@@ -31,4 +33,9 @@ func Contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// Convert "Some Text" to "some-text".
+func Slugify(text string) string {
+	return slug.Make(text)
 }
