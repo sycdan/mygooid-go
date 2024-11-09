@@ -63,6 +63,15 @@ func GeneratePassword(args *Args) string {
 	if args.Uppercase != "" {
 		password += string(args.Uppercase[rng.Intn(len(args.Uppercase))])
 	}
+	if args.Lowercase != "" {
+		password += string(args.Lowercase[rng.Intn(len(args.Lowercase))])
+	}
+	if args.Number != "" {
+		password += string(args.Number[rng.Intn(len(args.Number))])
+	}
+	if args.Special != "" {
+		password += string(args.Special[rng.Intn(len(args.Special))])
+	}
 
 	shuffler := maverick.NewMaverick([]string{}, rng)
 	shuffler.Shuffle()
@@ -78,6 +87,15 @@ func init() {
 func parseArgs() *Args {
 	args := NewArgs()
 	arg.MustParse(args)
+
+	if args.Purpose == "" {
+		utils.Die("Purpose must be specified")
+	}
+
+	if args.Length < 4 {
+		utils.Die("Length must be >= 4")
+	}
+
 	return args
 }
 
