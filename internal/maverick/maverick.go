@@ -11,6 +11,17 @@ type Maverick struct {
 	rng  *renji.Renji
 }
 
+type MaverickPSlice []*Maverick
+
+// Convert a typed slice to an interface slice.
+func (m MaverickPSlice) ToISlice() []interface{} {
+	var iSlice []interface{}
+	for _, v := range m {
+		iSlice = append(iSlice, v)
+	}
+	return iSlice
+}
+
 // Creates a new Maverick with a pool of options.
 func NewMaverick(pool []interface{}, rng *renji.Renji) *Maverick {
 	return (&Maverick{
@@ -35,28 +46,22 @@ func (m *Maverick) Shuffle() *Maverick {
 	return m
 }
 
-// Next returns the next random element from the pool. When all elements are exhausted, it reshuffles.
+// Returns the next element from the pool. When all elements are exhausted, it reshuffles.
 func (m *Maverick) Next() interface{} {
-	return m.deck[0]
-	// If no elements are available, reshuffle the pool.
-	// if len(s.deck) == 0 {
-	// 	s.reshuffle()
-	// }
+	if len(m.deck) == 0 {
+		m.Reset()
+		m.Shuffle()
+	}
 
-	// // Randomly select an element from the available pool.
-	// idx := s.rng.Intn(len(s.deck))
-	// choice := s.deck[idx]
+	// Get the top card from the deck.
+	topCard := m.deck[0]
 
-	// // Remove the chosen element from available pool.
-	// s.deck = append(s.deck[:idx], s.deck[idx+1:]...)
+	// Remove the top card from the deck.
+	m.deck = m.deck[1:]
 
-	// return choice
+	return topCard
 }
 
-// // Reshuffle resets the available pool to the original pool and shuffles it.
-// func (s *Maverick) reshuffle() {
-// 	s.deck = append([]string(nil), s.pool...) // Copy the pool
-// 	s.rng.Shuffle(len(s.deck), func(i, j int) {
-// 		s.deck[i], s.deck[j] = s.deck[j], s.deck[i]
-// 	})
-// }
+func Draw[T any](m *Maverick) T {
+	return (m.Next()).(T)
+}

@@ -8,8 +8,9 @@ import (
 	"strings"
 
 	"github.com/alexflint/go-arg"
-	// "github.com/sycdan/mygooid-go/internal/maverick"
+	"github.com/sycdan/mygooid-go/internal/maverick"
 	"github.com/sycdan/mygooid-go/internal/renji"
+	"github.com/sycdan/mygooid-go/internal/table"
 	"github.com/sycdan/mygooid-go/internal/utils"
 )
 
@@ -38,8 +39,9 @@ func NewArgs() *Args {
 
 var reader *bufio.Reader
 
-var ANCHORS = []string{"aqw1", "btx2", "cry3", "djs4", "ez5*", "fmn6", "gop7", "hkl8", "iuv9"}
+var TABLES = []string{"aqw1", "btx2", "cry3", "djs4", "ez5*", "fmn6", "gop7", "hkl8", "iuv9"}
 
+const DEFAULT_ANCHOR_INDEX = 4 // This will be used when a character in the secret cannot be found
 const DEFAULT_PURPOSE = "General"
 const DEFAULT_UPPERCASES = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const DEFAULT_LOWERCASES = "abcdefghijklmnopqrstuvwxyz"
@@ -53,10 +55,45 @@ func MakeGooid(args *Args) string {
 }
 
 func GeneratePassword(args *Args) string {
-	var password string
-
 	gooid := MakeGooid(args)
 	rng := renji.NewRenji(gooid)
+
+	// slice of length equal to args.length
+	var password string
+
+	decks := make(maverick.MaverickPSlice, 0)
+	if args.Uppercase != "" {
+		decks = append(decks, maverick.NewMaverick(utils.StringToInterfaceSlice(args.Uppercase), rng))
+	}
+	if args.Lowercase != "" {
+		decks = append(decks, maverick.NewMaverick(utils.StringToInterfaceSlice(args.Lowercase), rng))
+	}
+	if args.Number != "" {
+		decks = append(decks, maverick.NewMaverick(utils.StringToInterfaceSlice(args.Number), rng))
+	}
+	if args.Special != "" {
+		decks = append(decks, maverick.NewMaverick(utils.StringToInterfaceSlice(args.Special), rng))
+	}
+
+	deckOfDecks := maverick.NewMaverick(decks.ToISlice(), rng)
+	for i := 0; i < 10; i++ {
+		deck := maverick.Draw[*maverick.Maverick](deckOfDecks)
+		fmt.Println(utils.ToString(deck))
+	}
+
+	runeToTable := make(map[rune]*table.Table)
+	for _, name := range TABLES {
+		aTable := table.NewTable(name)
+
+		// Populate the decks at the table with an even selection of mavericks
+		for i := 0; i < 8; i++ {
+			// aTable.AddDeck(maverick.NewMaverick())
+		}
+
+		for _, r := range name {
+			runeToTable[r] = aTable
+		}
+	}
 
 	// Add one of each required (nonblank) character group to the password.
 
@@ -73,8 +110,17 @@ func GeneratePassword(args *Args) string {
 		password += string(args.Special[rng.Intn(len(args.Special))])
 	}
 
+	// Fill the rest of the preliminary password with random characters.
+	// while len(password) < args.Length {}
 	// shuffler := maverick.NewMaverick([]string{}, rng)
 	// shuffler.Shuffle()
+
+	// a slice the length of ANCHORS will hold other slices of 8 characters (the compass rose)
+	// pick a random start point in the secret
+	// for each character in the secret substring, up to length args.Length
+	// - find that char in the anchors
+	// - add the corresponding position from the password into the anchor's character set at x, then increment x
+	// - if password is longer than 8 and we encounter a spot that's already taken, change password character to match it
 
 	return password
 }

@@ -39,3 +39,12 @@ func Contains(slice []string, item string) bool {
 func Slugify(text string) string {
 	return slug.Make(text)
 }
+
+// Convert a string to a generic interface slice of characters.
+func StringToInterfaceSlice(text string) []interface{} {
+	var result []interface{}
+	for _, runeValue := range text {
+		result = append(result, string(runeValue))
+	}
+	return result
+}
